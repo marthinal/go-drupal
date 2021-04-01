@@ -97,7 +97,7 @@ func (d *Drush) Run() (output string, messages DrushMessages, errs error) {
 }
 
 func (d *Drush) buildCommand() {
-	global := []string{d.Command, "--yes", "--nocolor"}
+	global := []string{d.Command, "--yes"}
 	arguments := append(global, d.Arguments...)
 
 	d.cmd = exec.Command("drush", arguments...)
