@@ -3,7 +3,6 @@ package drupal
 import (
 	"bufio"
 	"bytes"
-	"os"
 	"os/exec"
 	"strings"
 	"sync"
@@ -102,7 +101,6 @@ func (d *Drush) buildCommand() {
 
 	d.cmd = exec.Command("drush", arguments...)
 	d.cmd.Dir = d.Directory
-	d.cmd.Env = append(os.Environ(), "DRUSH_COLUMNS=10000", "COLUMNS=10000")
 }
 
 // DrushMessage implements the standard error interface and represents a single line in stdout
