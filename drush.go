@@ -66,7 +66,7 @@ func (d *Drush) Run() (output string, messages DrushMessages, errs error) {
 		scanner := bufio.NewScanner(stderr)
 		for scanner.Scan() {
 			message := NewDrushMessage(scanner.Text())
-			if message.Type == DrushMessageOK || message.Type == DrushMessageSuccess {
+			if message.Type == DrushMessageSuccess || message.Type == DrushMessageInfo || message.Type == DrushMessagePreflight || message.Type == DrushMessageDebug {
 				messages = append(messages, message)
 			} else {
 				errset = append(errset, message)
@@ -111,23 +111,29 @@ type DrushMessage struct {
 
 // NewDrushMessage returns a DrushMessage from a raw stderr output line from a drush command
 func NewDrushMessage(messageline string) DrushMessage {
+	messageline = strings.TrimSpace(messageline)
 	var mestype DrushMessageType
-	if strings.HasSuffix(messageline, DrushMessageError.String()) {
+	if strings.HasPrefix(messageline, DrushMessageError.String()) {
 		mestype = DrushMessageError
-	} else if strings.HasSuffix(messageline, DrushMessageWarning.String()) {
+	} else if strings.HasPrefix(messageline, DrushMessagePreflight.String()) {
+		mestype = DrushMessagePreflight
+	} else if strings.HasPrefix(messageline, DrushMessageDebug.String()) {
+		mestype = DrushMessageDebug
+	} else if strings.HasPrefix(messageline, DrushMessageInfo.String()) {
+		mestype = DrushMessageInfo
+	} else if strings.HasPrefix(messageline, DrushMessageWarning.String()) {
 		mestype = DrushMessageWarning
-	} else if strings.HasSuffix(messageline, DrushMessageNotice.String()) {
-		mestype = DrushMessageWarning
-	} else if strings.HasSuffix(messageline, DrushMessageOK.String()) {
+	} else if strings.HasPrefix(messageline, DrushMessageNotice.String()) {
+		mestype = DrushMessageNotice
+	} else if strings.HasPrefix(messageline, DrushMessageOK.String()) {
 		mestype = DrushMessageOK
-	} else if strings.HasSuffix(messageline, DrushMessageSuccess.String()) {
+	} else if strings.HasPrefix(messageline, DrushMessageSuccess.String()) {
 		mestype = DrushMessageSuccess
 	} else {
 		mestype = DrushMessageUnknown
 	}
 
-	messageline = strings.TrimSuffix(messageline, mestype.String())
-	messageline = strings.TrimSpace(messageline)
+	messageline = strings.TrimPrefix(messageline, mestype.String())
 
 	return DrushMessage{Message: messageline, Type: mestype}
 }
@@ -144,12 +150,15 @@ func (det DrushMessageType) String() string {
 }
 
 const (
-	DrushMessageError   DrushMessageType = "[error]"   // For errors reported as [error]
-	DrushMessageWarning DrushMessageType = "[warning]" // For errors reported as [warning]
-	DrushMessageNotice  DrushMessageType = "[notice]"  // For errors reported as [notice]
-	DrushMessageOK      DrushMessageType = "[ok]"      // For non-errors reported as [ok]
-	DrushMessageSuccess DrushMessageType = "[success]" // For non-errors reported as [success]
-	DrushMessageUnknown DrushMessageType = "[unknown]" // All other output in stderr
+	DrushMessageDebug     DrushMessageType = "[debug]"
+	DrushMessagePreflight DrushMessageType = "[preflight]"
+	DrushMessageInfo      DrushMessageType = "[info]"
+	DrushMessageError     DrushMessageType = "[error]"   // For errors reported as [error]
+	DrushMessageWarning   DrushMessageType = "[warning]" // For errors reported as [warning]
+	DrushMessageNotice    DrushMessageType = "[notice]"  // For errors reported as [notice]
+	DrushMessageOK        DrushMessageType = "[ok]"      // For non-errors reported as [ok]
+	DrushMessageSuccess   DrushMessageType = "[success]" // For non-errors reported as [success]
+	DrushMessageUnknown   DrushMessageType = "[unknown]" // All other output in stderr
 )
 
 // DrushMessages implements the standard error interface and represents all errors, warnings and notices reported by a drush command
