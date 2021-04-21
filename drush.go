@@ -68,7 +68,7 @@ func (d *Drush) Run() (output string, messages DrushMessages, errs error) {
 			message := NewDrushMessage(scanner.Text())
 			if message.Type == DrushMessageSuccess || message.Type == DrushMessageInfo || message.Type == DrushMessagePreflight || message.Type == DrushMessageDebug {
 				messages = append(messages, message)
-			} else if message.Type != DrushMessageUnknown {
+			} else {
 				errset = append(errset, message)
 			}
 		}
